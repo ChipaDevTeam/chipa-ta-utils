@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Candle, Period, Reset, TaUtilsError, TaUtilsResult};
 
+#[cfg(feature = "schemas")]
+use schemars::JsonSchema;
+
+#[cfg_attr(feature = "schemas", derive(JsonSchema))]
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bar {
     pub open: f64,
@@ -16,6 +20,7 @@ pub struct Bar {
 
 /// Market data passed to strategies and indicators.
 /// Contains OHLCV values.
+#[cfg_attr(feature = "schemas", derive(JsonSchema))]
 #[derive(Debug, Clone)]
 pub enum MarketData {
     Bar(Bar), // Boxed trait object for dynamic dispatch
@@ -25,6 +30,7 @@ pub enum MarketData {
 
 // Can you help me emprove the Queue struct? the goal is to make it like a Vec but with a fixed capacity that removes the oldest element when a new one is added beyond its capacity.
 // it also implements the Period and Reset traits, allowing it to be used in a similar way to Cycle.
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Queue<T> {
     queue: Vec<T>,

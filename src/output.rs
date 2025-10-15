@@ -6,6 +6,7 @@ use crate::{Candle, TaUtilsError, TaUtilsResult, OutputError};
 
 
 
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum OutputShape {
     Shape(usize), // Normal shape, using enum in case in the future we want to add more shapes
@@ -30,6 +31,7 @@ impl fmt::Display for OutputShape {
     }
 }
 
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Statics {
     Greater,
@@ -64,6 +66,7 @@ impl PartialOrd<f64> for Statics {
 }
 
 
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum OutputType {
     Single(f64),
