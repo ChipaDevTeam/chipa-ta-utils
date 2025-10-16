@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Candle, Period, Reset, TaUtilsError, TaUtilsResult};
 
-#[cfg(feature = "schemas")]
-use schemars::JsonSchema;
-
-#[cfg_attr(feature = "schemas", derive(JsonSchema))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bar {
     pub open: f64,
@@ -20,7 +17,7 @@ pub struct Bar {
 
 /// Market data passed to strategies and indicators.
 /// Contains OHLCV values.
-#[cfg_attr(feature = "schemas", derive(JsonSchema))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone)]
 pub enum MarketData {
     Bar(Bar), // Boxed trait object for dynamic dispatch
