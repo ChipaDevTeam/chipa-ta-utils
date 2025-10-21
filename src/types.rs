@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{Candle, Period, Reset, TaUtilsError, TaUtilsResult};
 
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize, PartialOrd)]
 pub struct Bar {
     pub open: f64,
     pub high: f64,
@@ -18,7 +18,7 @@ pub struct Bar {
 /// Market data passed to strategies and indicators.
 /// Contains OHLCV values.
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum MarketData {
     Bar(Bar), // Boxed trait object for dynamic dispatch
     // Add more variants as needed for other Candle implementors
@@ -169,7 +169,7 @@ impl Candle for MarketData {
     }
 }
 
-impl<T: Default + Clone> Queue<T> {
+impl<T> Queue<T> {
     pub fn new(period: usize) -> TaUtilsResult<Self> {
         if period == 0 {
             return Err(TaUtilsError::InvalidParameter(
