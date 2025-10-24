@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 
 use serde::{Deserialize, Serialize};
@@ -113,6 +114,16 @@ impl Candle for Bar {
     }
 }
 
+impl fmt::Display for Bar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Bar {{ O: {:.2}, H: {:.2}, L: {:.2}, C: {:.2}, P: {:.2}, V: {:.0} }}",
+            self.open, self.high, self.low, self.close, self.price, self.volume
+        )
+    }
+}
+
 
 
 impl MarketData {
@@ -165,6 +176,15 @@ impl Candle for MarketData {
         match self {
             MarketData::Bar(bar) => bar.volume(),
             MarketData::Float(_) => f64::NAN, // Volume not applicable for Float variant
+        }
+    }
+}
+
+impl fmt::Display for MarketData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MarketData::Bar(bar) => write!(f, "{}", bar),
+            MarketData::Float(value) => write!(f, "Float({:.2})", value),
         }
     }
 }
