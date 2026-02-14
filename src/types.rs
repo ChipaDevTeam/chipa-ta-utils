@@ -23,7 +23,7 @@ pub struct Bar {
 pub enum MarketData {
     Bar(Bar), // Boxed trait object for dynamic dispatch
     // Add more variants as needed for other Candle implementors
-    Float(f64),
+    Float(f64), // TODO: Use Decimal in the future
 }
 
 // Can you help me emprove the Queue struct? the goal is to make it like a Vec but with a fixed capacity that removes the oldest element when a new one is added beyond its capacity.
@@ -123,8 +123,6 @@ impl fmt::Display for Bar {
         )
     }
 }
-
-
 
 impl MarketData {
     /// Returns the typical price ((high + low + close) / 3).

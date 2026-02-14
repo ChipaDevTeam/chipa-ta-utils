@@ -11,13 +11,13 @@ pub enum TaUtilsError {
 
     #[error("Unexpected error, {0}")]
     Unexpected(String),
-    
+
     #[error("Incorrect output type, expected {expected}, got {actual}")]
     IncorrectOutputType { expected: String, actual: String },
 
     #[error("LangError {0}")]
     Lang(String),
-    
+
     #[error("Cmp error, {0}")]
     Cmp(#[from] OutputError),
 }
@@ -38,7 +38,16 @@ impl PartialEq for TaUtilsError {
             (TaUtilsError::InvalidParameter(a), TaUtilsError::InvalidParameter(b)) => a == b,
             (TaUtilsError::Unallowed(a), TaUtilsError::Unallowed(b)) => a == b,
             (TaUtilsError::Unexpected(a), TaUtilsError::Unexpected(b)) => a == b,
-            (TaUtilsError::IncorrectOutputType { expected: e1, actual: a1 }, TaUtilsError::IncorrectOutputType { expected: e2, actual: a2 }) => e1 == e2 && a1 == a2,
+            (
+                TaUtilsError::IncorrectOutputType {
+                    expected: e1,
+                    actual: a1,
+                },
+                TaUtilsError::IncorrectOutputType {
+                    expected: e2,
+                    actual: a2,
+                },
+            ) => e1 == e2 && a1 == a2,
             _ => false,
         }
     }

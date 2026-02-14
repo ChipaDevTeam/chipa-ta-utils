@@ -5,8 +5,10 @@ edition = "2024"
 
 [features]
 schemars = ["dep:schemars"]
+strategy = []
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
 schemars = { version = "1.0.4", optional = true }
+

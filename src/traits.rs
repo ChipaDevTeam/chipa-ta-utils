@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{errors::TaUtilsResult, Bar, OutputShape, TaUtilsError};
+use crate::{Bar, OutputShape, TaUtilsError, errors::TaUtilsResult};
 
 pub trait Candle: fmt::Debug {
     fn open(&self) -> f64 {
@@ -36,7 +36,6 @@ pub trait Candle: fmt::Debug {
     }
 }
 
-
 pub trait Next<T> {
     type Output;
 
@@ -47,7 +46,9 @@ impl Next<&dyn Candle> for () {
     type Output = f64;
 
     fn next(&mut self, _: &dyn Candle) -> TaUtilsResult<Self::Output> {
-        Err(TaUtilsError::InvalidParameter("Cannot call next on unit type".to_string()))
+        Err(TaUtilsError::InvalidParameter(
+            "Cannot call next on unit type".to_string(),
+        ))
     }
 }
 
@@ -64,8 +65,6 @@ pub trait Reset {
     fn reset(&mut self);
 }
 
-
 pub trait Period {
     fn period(&self) -> usize;
 }
-

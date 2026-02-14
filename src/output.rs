@@ -2,9 +2,7 @@ use core::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Candle, TaUtilsError, TaUtilsResult, OutputError};
-
-
+use crate::{Candle, OutputError, TaUtilsError, TaUtilsResult};
 
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -65,7 +63,6 @@ impl PartialOrd<f64> for Statics {
     }
 }
 
-
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum OutputType {
@@ -117,14 +114,15 @@ impl OutputType {
             OutputType::Custom(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
                 for ot in vec {
-                    match ot.resolve(data)? { // FIXME: Fix it for when output types support complex shapes
+                    match ot.resolve(data)? {
+                        // FIXME: Fix it for when output types support complex shapes
                         OutputType::Single(v) => out.push(OutputType::Single(v)),
                         OutputType::Static(s) => out.push(OutputType::Static(s)),
                         _ => {
                             return Err(TaUtilsError::IncorrectOutputType {
                                 expected: "Single".into(),
                                 actual: "Array".into(),
-                            })
+                            });
                         }
                     }
                 }
@@ -135,8 +133,6 @@ impl OutputType {
         }
     }
 }
-
-
 
 impl OutputShape {
     pub fn validate(&self) -> TaUtilsResult<Self> {
@@ -159,7 +155,6 @@ impl OutputShape {
     }
 }
 
-
 impl From<f64> for OutputType {
     fn from(value: f64) -> Self {
         Self::Single(value)
@@ -174,7 +169,7 @@ impl From<Vec<f64>> for OutputType {
 
 impl TryFrom<OutputType> for f64 {
     type Error = TaUtilsError;
-    
+
     fn try_from(value: OutputType) -> Result<Self, Self::Error> {
         match value {
             OutputType::Single(output) => Ok(output),
@@ -192,7 +187,7 @@ impl TryFrom<OutputType> for f64 {
 
 impl TryFrom<OutputType> for Vec<f64> {
     type Error = TaUtilsError;
-    
+
     fn try_from(value: OutputType) -> Result<Self, Self::Error> {
         match value {
             OutputType::Array(output) => Ok(output),
