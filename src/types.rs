@@ -1,6 +1,7 @@
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
+use chipa_types::Number;
 use serde::{Deserialize, Serialize};
 
 use crate::{Candle, Period, Reset, TaUtilsError, TaUtilsResult};
@@ -131,6 +132,17 @@ impl MarketData {
             MarketData::Bar(bar) => bar.typical_price(),
             MarketData::Float(value) => *value,
         }
+    }
+    
+    pub fn from_number(open: impl Into<Number>, high: impl Into<Number>, low: impl Into<Number>, close: impl Into<Number>, price: impl Into<Number>, volume: impl Into<Number>) -> Self {
+        MarketData::Bar(Bar {
+            open: open.into().into(),
+            high: high.into().into(),
+            low: low.into().into(),
+            close: close.into().into(),
+            price: price.into().into(),
+            volume: volume.into().into(),
+        })
     }
 }
 
