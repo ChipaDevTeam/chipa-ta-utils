@@ -1,5 +1,7 @@
 use core::fmt;
 
+use chipa_types::Number;
+
 use crate::{Bar, OutputShape, TaUtilsError, errors::TaUtilsResult};
 
 pub trait Candle: fmt::Debug {
@@ -68,3 +70,109 @@ pub trait Reset {
 pub trait Period {
     fn period(&self) -> usize;
 }
+
+
+// Implement Reset for default types
+impl Reset for () {
+    fn reset(&mut self) {
+        // No state to reset
+    }
+}
+
+impl<T> Reset for Vec<T> {
+    fn reset(&mut self) {
+        self.clear();
+    }    
+}
+
+impl Reset for f64 {
+    fn reset(&mut self) {
+    }
+}
+
+impl Reset for Number {
+    fn reset(&mut self) {
+    }    
+}
+
+impl<T> Reset for Option<T> {
+    fn reset(&mut self) {
+        *self = None;
+    }
+}
+
+impl Reset for usize {
+    fn reset(&mut self) {
+    }
+} 
+
+impl Reset for bool {
+    fn reset(&mut self) {
+        *self = false;
+    }
+}
+
+impl Reset for String {
+    fn reset(&mut self) {
+        self.clear();
+    }
+}
+
+impl Period for () {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl Period for f64 {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl Period for Number {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl Period for usize {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl Period for bool {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl Period for String {
+    fn period(&self) -> usize {
+        0
+    }
+}
+
+impl<T> Period for Vec<T> {
+    fn period(&self) -> usize {
+        self.len()
+    }
+}
+
+
+impl<T: Period> Period for Option<T> {
+    fn period(&self) -> usize {
+        match self {
+            Some(t) => t.period(),
+            None => 0,
+        }
+    }
+}
+
+impl<T> Period for Box<[T]> {
+    fn period(&self) -> usize {
+        self.len()
+    }
+}
+
