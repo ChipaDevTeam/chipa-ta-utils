@@ -22,6 +22,9 @@ pub enum StrategyError {
     #[error("Invalid indicator period: {period}")]
     InvalidIndicatorPeriod { period: usize },
 
+    #[error("Internal error: {0}")]
+    Internal(String),
+    
     #[error("Poison Error: {0}")]
     Poison(String),
 
