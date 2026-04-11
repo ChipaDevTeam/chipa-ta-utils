@@ -3,6 +3,7 @@ use core::fmt;
 use serde::{Deserialize, Serialize};
 
 use crate::{Candle, OutputError, TaUtilsError, TaUtilsResult};
+use chipa_types::Number;
 
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -39,8 +40,8 @@ pub enum Statics {
     False,
 }
 
-impl PartialEq<f64> for Statics {
-    fn eq(&self, _other: &f64) -> bool {
+impl PartialEq<Number> for Statics {
+    fn eq(&self, _other: &Number) -> bool {
         match self {
             Statics::Greater => false,
             Statics::Equal => true,
@@ -51,8 +52,8 @@ impl PartialEq<f64> for Statics {
     }
 }
 
-impl PartialOrd<f64> for Statics {
-    fn partial_cmp(&self, _other: &f64) -> Option<std::cmp::Ordering> {
+impl PartialOrd<Number> for Statics {
+    fn partial_cmp(&self, _other: &Number) -> Option<std::cmp::Ordering> {
         match self {
             Statics::Greater => Some(std::cmp::Ordering::Greater),
             Statics::Equal => Some(std::cmp::Ordering::Equal),
@@ -66,8 +67,8 @@ impl PartialOrd<f64> for Statics {
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum OutputType {
-    Single(f64),
-    Array(Vec<f64>),
+    Single(Number),
+    Array(Vec<Number>),
     Open,
     Close,
     High,
@@ -106,11 +107,11 @@ impl OutputType {
     pub fn resolve<C: Candle>(&self, data: &C) -> TaUtilsResult<OutputType> {
         match self {
             OutputType::Single(_) | OutputType::Array(_) => Ok(self.clone()),
-            OutputType::Open => Ok(OutputType::Single(data.open())),
-            OutputType::Close => Ok(OutputType::Single(data.close())),
-            OutputType::High => Ok(OutputType::Single(data.high())),
-            OutputType::Low => Ok(OutputType::Single(data.low())),
-            OutputType::Volume => Ok(OutputType::Single(data.volume())),
+            OutputType::Open => Ok(OutputType::Single(Number::float(data.open()))),
+            OutputType::Close => Ok(OutputType::Single(Number::float(data.close()))),
+            OutputType::High => Ok(OutputType::Single(Number::float(data.high()))),
+            OutputType::Low => Ok(OutputType::Single(Number::float(data.low()))),
+            OutputType::Volume => Ok(OutputType::Single(Number::float(data.volume()))),
             OutputType::Custom(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
                 for ot in vec {
@@ -155,15 +156,44 @@ impl OutputShape {
     }
 }
 
+impl From<Number> for OutputType {
+    fn from(value: Number) -> Self {
+        Self::Single(value.into())
+    }
+}
+
 impl From<f64> for OutputType {
     fn from(value: f64) -> Self {
-        Self::Single(value)
+        Self::Single(value.into())
+    }
+}
+
+impl From<Vec<Number>> for OutputType {
+    fn from(value: Vec<Number>) -> Self {
+        Self::Array(value.into_iter().map(|v| v.into()).collect())
     }
 }
 
 impl From<Vec<f64>> for OutputType {
     fn from(value: Vec<f64>) -> Self {
-        Self::Array(value)
+        Self::Array(value.into_iter().map(|v| v.into()).collect())
+    }
+}
+
+impl TryFrom<OutputType> for Number {
+    type Error = TaUtilsError;
+    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+        match value {
+            OutputType::Single(output) => Ok(output),
+            OutputType::Array(_) => Err(TaUtilsError::IncorrectOutputType {
+                expected: "Number".to_string(),
+                actual: "Vec<Number>".to_string(),
+            }),
+            _ => Err(TaUtilsError::IncorrectOutputType {
+                expected: "Number".to_string(),
+                actual: "Other".to_string(),
+            }),
+        }
     }
 }
 
@@ -172,13 +202,30 @@ impl TryFrom<OutputType> for f64 {
 
     fn try_from(value: OutputType) -> Result<Self, Self::Error> {
         match value {
-            OutputType::Single(output) => Ok(output),
+            OutputType::Single(output) => Ok(output.as_f64()),
             OutputType::Array(_) => Err(TaUtilsError::IncorrectOutputType {
                 expected: "f64".to_string(),
-                actual: "Vec<f64>".to_string(),
+                actual: "Vec<Number>".to_string(),
             }),
             _ => Err(TaUtilsError::IncorrectOutputType {
                 expected: "f64".to_string(),
+                actual: "Other".to_string(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<OutputType> for Vec<Number> {
+    type Error = TaUtilsError;
+    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+        match value {
+            OutputType::Array(output) => Ok(output),
+            OutputType::Single(_) => Err(TaUtilsError::IncorrectOutputType {
+                expected: "Vec<Number>".to_string(),
+                actual: "Number".to_string(),
+            }),
+            _ => Err(TaUtilsError::IncorrectOutputType {
+                expected: "Vec<Number>".to_string(),
                 actual: "Other".to_string(),
             }),
         }
@@ -190,10 +237,10 @@ impl TryFrom<OutputType> for Vec<f64> {
 
     fn try_from(value: OutputType) -> Result<Self, Self::Error> {
         match value {
-            OutputType::Array(output) => Ok(output),
+            OutputType::Array(output) => Ok(output.into_iter().map(|n| n.as_f64()).collect()),
             OutputType::Single(_) => Err(TaUtilsError::IncorrectOutputType {
                 expected: "Vec<f64>".to_string(),
-                actual: "f64".to_string(),
+                actual: "Number".to_string(),
             }),
             _ => Err(TaUtilsError::IncorrectOutputType {
                 expected: "Vec<f64>".to_string(),
