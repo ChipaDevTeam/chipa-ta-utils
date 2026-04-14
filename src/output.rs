@@ -299,6 +299,66 @@ impl PartialOrd for OutputType {
                     }
                 }
             }
+            (OutputType::Array(a), OutputType::Custom(b)) => {
+                if a.len() != b.len() {
+                    None
+                } else {
+                    let mut equals = Vec::new();
+                    for (a_val, b_val) in a.iter().zip(b.iter()) {
+                        if let Some(ordering) = OutputType::Single(a_val.clone()).partial_cmp(b_val)
+                        {
+                            equals.push(ordering);
+                        }
+                    }
+                    if equals.is_empty() || equals.len() != a.len() {
+                        return None;
+                    }
+                    match equals.iter().all(|&o| o == equals[0]) {
+                        true => Some(equals[0]),
+                        false => None,
+                    }
+                }
+            }
+            (OutputType::Custom(b), OutputType::Array(a)) => {
+                if a.len() != b.len() {
+                    None
+                } else {
+                    let mut equals = Vec::new();
+                    for (b_val, a_val) in b.iter().zip(a.iter()) {
+                        if let Some(ordering) =
+                            b_val.partial_cmp(&OutputType::Single(a_val.clone()))
+                        {
+                            equals.push(ordering);
+                        }
+                    }
+                    if equals.is_empty() || equals.len() != a.len() {
+                        return None;
+                    }
+                    match equals.iter().all(|&o| o == equals[0]) {
+                        true => Some(equals[0]),
+                        false => None,
+                    }
+                }
+            }
+            (OutputType::Custom(a), OutputType::Custom(b)) => {
+                if a.len() != b.len() {
+                    None
+                } else {
+                    let mut equals = Vec::new();
+                    for (a_val, b_val) in a.iter().zip(b.iter()) {
+                        if let Some(ordering) = a_val.partial_cmp(b_val) {
+                            equals.push(ordering);
+                        }
+                    }
+                    if equals.is_empty() || equals.len() != a.len() {
+                        return None;
+                    }
+                    match equals.iter().all(|&o| o == equals[0]) {
+                        true => Some(equals[0]),
+                        false => None,
+                    }
+                }
+            }
             _ => None,
         }
     }
