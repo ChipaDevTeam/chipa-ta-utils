@@ -180,11 +180,11 @@ impl From<Vec<f64>> for OutputType {
     }
 }
 
-impl TryFrom<OutputType> for Number {
+impl TryFrom<&OutputType> for Number {
     type Error = TaUtilsError;
-    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+    fn try_from(value: &OutputType) -> Result<Self, Self::Error> {
         match value {
-            OutputType::Single(output) => Ok(output),
+            OutputType::Single(output) => Ok(*output),
             OutputType::Array(_) => Err(TaUtilsError::IncorrectOutputType {
                 expected: "Number".to_string(),
                 actual: "Vec<Number>".to_string(),
@@ -196,6 +196,14 @@ impl TryFrom<OutputType> for Number {
         }
     }
 }
+
+impl TryFrom<OutputType> for Number {
+    type Error = TaUtilsError;
+    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+        Number::try_from(&value)
+    }
+}
+
 
 impl TryFrom<OutputType> for f64 {
     type Error = TaUtilsError;
@@ -215,11 +223,12 @@ impl TryFrom<OutputType> for f64 {
     }
 }
 
-impl TryFrom<OutputType> for Vec<Number> {
+impl TryFrom<&OutputType> for Vec<Number> {
     type Error = TaUtilsError;
-    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+    fn try_from(value: &OutputType) -> Result<Self, Self::Error> {
         match value {
-            OutputType::Array(output) => Ok(output),
+            OutputType::Array(output) => Ok(output.iter().map(|n| *n).collect()),
+            OutputType::Custom(output) => output.into_iter().map(|o| o.try_into()).collect::<Result<Vec<Number>, TaUtilsError>>(),
             OutputType::Single(_) => Err(TaUtilsError::IncorrectOutputType {
                 expected: "Vec<Number>".to_string(),
                 actual: "Number".to_string(),
@@ -229,6 +238,13 @@ impl TryFrom<OutputType> for Vec<Number> {
                 actual: "Other".to_string(),
             }),
         }
+    }
+}
+
+impl TryFrom<OutputType> for Vec<Number> {
+    type Error = TaUtilsError;
+    fn try_from(value: OutputType) -> Result<Self, Self::Error> {
+        Vec::<Number>::try_from(&value)
     }
 }
 
