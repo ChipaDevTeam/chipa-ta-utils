@@ -15,6 +15,14 @@ pub struct Bar {
     pub close: f64,
     pub price: f64,
     pub volume: f64,
+    /// Notional value (quote currency) of **long** positions force-liquidated
+    /// during this candle. `0.0` when the feed provides no liquidation data.
+    #[serde(default)]
+    pub long_liq: f64,
+    /// Notional value (quote currency) of **short** positions force-liquidated
+    /// during this candle. `0.0` when the feed provides no liquidation data.
+    #[serde(default)]
+    pub short_liq: f64,
 }
 
 /// Market data passed to strategies and indicators.
@@ -45,6 +53,8 @@ impl Default for Bar {
             high: 0.0,
             price: 0.0,
             volume: 0.0,
+            long_liq: 0.0,
+            short_liq: 0.0,
         }
     }
 }
@@ -84,6 +94,16 @@ impl Bar {
         self
     }
 
+    pub fn set_long_liq(mut self, val: f64) -> Self {
+        self.long_liq = val;
+        self
+    }
+
+    pub fn set_short_liq(mut self, val: f64) -> Self {
+        self.short_liq = val;
+        self
+    }
+
     pub fn typical_price(&self) -> f64 {
         (self.high + self.low + self.close) / 3.0
     }
@@ -112,6 +132,14 @@ impl Candle for Bar {
 
     fn volume(&self) -> f64 {
         self.volume
+    }
+
+    fn long_liq(&self) -> f64 {
+        self.long_liq
+    }
+
+    fn short_liq(&self) -> f64 {
+        self.short_liq
     }
 }
 
@@ -142,6 +170,7 @@ impl MarketData {
             close: close.into().into(),
             price: price.into().into(),
             volume: volume.into().into(),
+            ..Default::default()
         })
     }
 }
@@ -186,6 +215,20 @@ impl Candle for MarketData {
         match self {
             MarketData::Bar(bar) => bar.volume(),
             MarketData::Float(_) => f64::NAN, // Volume not applicable for Float variant
+        }
+    }
+
+    fn long_liq(&self) -> f64 {
+        match self {
+            MarketData::Bar(bar) => bar.long_liq(),
+            MarketData::Float(_) => 0.0,
+        }
+    }
+
+    fn short_liq(&self) -> f64 {
+        match self {
+            MarketData::Bar(bar) => bar.short_liq(),
+            MarketData::Float(_) => 0.0,
         }
     }
 }

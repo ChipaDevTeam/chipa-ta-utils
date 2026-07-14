@@ -74,6 +74,15 @@ pub enum OutputType {
     High,
     Low,
     Volume,
+    /// Notional value of long positions liquidated during the current candle.
+    LongLiq,
+    /// Notional value of short positions liquidated during the current candle.
+    ShortLiq,
+    /// Total liquidated notional (`LongLiq + ShortLiq`).
+    TotalLiq,
+    /// Liquidation imbalance (`LongLiq - ShortLiq`): positive when longs are
+    /// being flushed (downward cascade), negative when shorts are (upward squeeze).
+    LiqDelta,
     Custom(Vec<OutputType>),
     Static(Statics),
     Statics(Vec<Statics>),
@@ -88,7 +97,11 @@ impl OutputType {
             | OutputType::Close
             | OutputType::High
             | OutputType::Low
-            | OutputType::Volume => Ok(OutputShape::Shape(1)),
+            | OutputType::Volume
+            | OutputType::LongLiq
+            | OutputType::ShortLiq
+            | OutputType::TotalLiq
+            | OutputType::LiqDelta => Ok(OutputShape::Shape(1)),
             OutputType::Custom(vec) => OutputShape::Tensor(
                 vec.iter()
                     .map(|o| o.output_shape())
@@ -112,6 +125,14 @@ impl OutputType {
             OutputType::High => Ok(OutputType::Single(Number::float(data.high()))),
             OutputType::Low => Ok(OutputType::Single(Number::float(data.low()))),
             OutputType::Volume => Ok(OutputType::Single(Number::float(data.volume()))),
+            OutputType::LongLiq => Ok(OutputType::Single(Number::float(data.long_liq()))),
+            OutputType::ShortLiq => Ok(OutputType::Single(Number::float(data.short_liq()))),
+            OutputType::TotalLiq => Ok(OutputType::Single(Number::float(
+                data.long_liq() + data.short_liq(),
+            ))),
+            OutputType::LiqDelta => Ok(OutputType::Single(Number::float(
+                data.long_liq() - data.short_liq(),
+            ))),
             OutputType::Custom(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
                 for ot in vec {

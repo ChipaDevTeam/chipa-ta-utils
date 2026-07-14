@@ -27,6 +27,18 @@ pub trait Candle: fmt::Debug {
         f64::NAN
     }
 
+    /// Notional value of long positions liquidated during this candle.
+    /// Defaults to `0.0` for data sources without liquidation feeds.
+    fn long_liq(&self) -> f64 {
+        0.0
+    }
+
+    /// Notional value of short positions liquidated during this candle.
+    /// Defaults to `0.0` for data sources without liquidation feeds.
+    fn short_liq(&self) -> f64 {
+        0.0
+    }
+
     fn to_bar(&self) -> Bar {
         Bar::new()
             .set_open(self.open())
@@ -35,6 +47,8 @@ pub trait Candle: fmt::Debug {
             .set_close(self.close())
             .set_price(self.price())
             .set_volume(self.volume())
+            .set_long_liq(self.long_liq())
+            .set_short_liq(self.short_liq())
     }
 }
 
